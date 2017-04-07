@@ -1,0 +1,10 @@
+Programa soma1 
+{
+public static void Main() 
+{
+int n1; 
+int n2; 
+n2 = n3 + n4; 
+if ( x == 0 ) {x = n4 + n3; }
+}
+}

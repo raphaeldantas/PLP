@@ -1,0 +1,237 @@
+PARSER_BEGIN(comp)
+class comp 
+{
+	public static void main( String[] args )throws ParseException
+	{
+		try
+		{
+			comp analizador = new comp( System.in ) ;
+			analizador.Programa() ; 
+		}
+		catch(ParseException e)
+		{
+			System.out.println(e.getMessage());
+			System.out.println("Analizador: erro durante o processo de análise.");
+		}
+	}
+}
+PARSER_END(comp)
+
+SKIP : 
+{ 
+	" "|"\n" | "\r" | "\r\n" 
+}
+TOKEN:
+{
+	  <TIPOS:"int"|"float"|"str"|"chr">{System.out.println("TIPO -> "+image);}
+	| <NUMERO : (["0"-"9"])+ > {System.out.print("NUMERO "+image+"\r\n");}
+	| <IDENTIFICADOR : ["a"-"z","A"-"Z"](["a"-"z","A"-"Z","0"-"9","_"])*> {System.out.print("IDENTIFICADOR -> "+image+"\r\n");}
+	| <CADEIA : ["a"-"z","A"-"Z","0"-"9"](["a"-"z","A"-"Z","0"-"9"])*>{System.out.print("CADEIA -> "+image+"\r\n");}
+}
+TOKEN : 
+{ 
+	  <IGUAL : "= "> {System.out.println("IGUAL -> "+image+"\r\n");}
+	| <MAIS : "+" > {System.out.println("MAIS -> "+image+"\r\n");}
+	| <MENOS:"-">{System.out.println("MENOS -> "+image+"\r\n");}
+	| <MULTIPLICAR:"*">{System.out.println("MULTIPLICAR -> "+image+"\r\n");}
+	| <DIVIDIR:"/">{System.out.println("DIVIDIR -> "+image+"\r\n");}
+	| <INCR: "++" >{System.out.println("INCREMENTO -> "+image+"\r\n");}
+	| <DECR: "--" >{System.out.println("DECREMENTO -> "+image+"\r\n");}
+	
+}
+TOKEN:
+{
+	  <MAIN: "public static void Main() ">{System.out.println("MAIN -> "+image);}
+	| <PROGRAMA: "Programa " > {System.out.println("PROGRAMA -> "+image);}
+	| <IF: "if " >{System.out.println("IF -> "+image);}
+	| <ELSE:"else " >{System.out.println("ELSE -> "+image);}
+	| <ELSEIF:"elseif " >{System.out.println("ELSE IF -> "+image);}
+	| <FOR:"for " >{System.out.println("FOR -> "+image);}
+	| <SWITCH:"switch " >{System.out.println("SWITCH -> "+image);}
+	| <CASE:"case " >{System.out.println("CASE -> "+image);}
+	| <BREAK:"break " >{System.out.println("BREAK -> "+image);}
+	| <DEFAUL:"default " >{System.out.println("DEFAUL -> "+image);}
+	| <DO:"do " >{System.out.println("DO -> "+image);}
+	| <WHILE:"while " >{System.out.println("WHILE -> "+image);}
+	| <WRITE:"write " >{System.out.println("WRITE -> "+image);}
+	| <READ:"read " >{System.out.println("READ -> "+image);}
+}
+TOKEN:
+{
+      <EPARENTESE: "(" >{System.out.println("PARENTESE ESQUERDO -> "+image);}
+	| <DPARENTESE: ")" >{System.out.println("PARENTESE DIREITO -> "+image);}
+	| <ECHAVE: "{" >{System.out.println("CHAVE ESQUERDA -> "+image);}
+	| <DCHAVE: "}" >{System.out.println("CHAVE DIREITA -> "+image);}
+	| <ECOLCHETE: "[" >{System.out.println("COLCHETE ESQUERDO -> "+image);}
+	| <DCOLCHETE: "]" >{System.out.println("COLCHETE DIREITO -> "+image);}
+	| <PONTOVIRGULA: ";" >{System.out.println("PONTO E VIRGULA -> "+image);}
+	| <VIRGULA: "," >{System.out.println("VIRGULA -> "+image);}
+	| <PONTO: "." >{System.out.println("PONTO -> "+image);}
+}
+TOKEN:
+{
+	  <IGUALIGUAL: "==" >{System.out.println("COMPARACAO -> "+image);}
+	| <MENORIGUAL: "<=" >{System.out.println("MENOR OU IGUAL -> "+image);}
+	| <MAIORIGUAL: ">=" >{System.out.println("MAIOR OU IGUAL -> "+image);}
+	| <DIFERENTE: "!=" >{System.out.println("DIFERENTE -> "+image);}
+	| <OR: "||" >{System.out.println("OR -> "+image);}
+	| <AND: "&&">{System.out.println("AND -> "+image);}
+}
+
+void Programa() :
+{}
+{
+	<PROGRAMA><IDENTIFICADOR><ECHAVE>Bloque()<DCHAVE><EOF>
+	
+}
+void Bloque():
+{}
+{
+	DeclaracionGlobal() | Principal()
+}
+void DeclaracionGlobal():
+{}
+{
+	<TIPOS>VariablesGlobales()	
+}
+
+void VariablesGlobales():
+{}
+{
+	/*<IDENTIFICADOR>", "<IDENTIFICADOR> |*/ <IDENTIFICADOR> <PONTOVIRGULA> W()
+}
+void W():
+{}
+{
+	DeclaracionGlobal() | Principal()	
+}
+
+void Principal():
+{}
+{
+	<MAIN>
+	<ECHAVE>Sentencias()<DCHAVE>
+}
+
+void DeclaracionLocal():
+{}
+{
+	<TIPOS>VariablesLocales()
+}
+void VariablesLocales():
+{}
+{
+	/*<IDENTIFICADOR>", "<IDENTIFICADOR> | */<IDENTIFICADOR> <PONTOVIRGULA> VS()
+}
+
+void VS():
+{}
+{
+	DeclaracionLocal() | Sentencias()
+}
+
+void Sentencias():
+{}
+{
+ (
+	  DeclaracionLocal()
+    | SentenciaIf() 	
+	| SentenciaFor()
+	| SentenciaDo()	
+	| SentenciaAsignacion()
+	| SentenciaWrite()
+	| SentenciaRead()	
+	|<EOF>
+	//| SentenciaSwitch()
+	/*| Sentencias()  Left Recursion: Poner Sentencias() a la finalizacion de cada metodo?*/
+ )*
+}
+
+//Sentencia IF
+void SentenciaIf():
+{}
+{
+	<IF><EPARENTESE> A() <DPARENTESE> <ECHAVE> Sentencias() <DCHAVE> /*|	
+	"ien " "( " A() ") " "{ "Sentencias()"} ""Sino "*/
+}
+/*void Sino():
+{}
+{
+	"iotro " "{ "Sentencias()"} "
+}*/
+void A():
+{}
+{
+	  Comparaciones()
+	/*| Comparaciones() "&& " Comparaciones()
+	| Comparaciones() "|| " Comparaciones()*/
+}
+//Fin sentencia if
+
+void Comparaciones():
+{}
+{
+	Valor()Operadores()Valor()
+}
+void Valor():
+{}
+{
+	<IDENTIFICADOR> | <NUMERO>
+}
+void Expresion():
+{}
+{
+	/*<NUMERO> | <IDENTIFICADOR> |*/ <IDENTIFICADOR><MAIS><IDENTIFICADOR><PONTOVIRGULA> /*| <NUMERO> OpAritmetico() <NUMERO> | 
+	<IDENTIFICADOR> OpAritmetico() <IDENTIFICADOR>|
+	<IDENTIFICADOR> OpAritmetico() <NUMERO> | <IDENTIFICADOR> */
+}
+
+void Operadores():
+{}
+{
+	  <IGUALIGUAL> | <MENORIGUAL> |<MAIORIGUAL>|<DIFERENTE> 
+}
+void OpAritmetico():
+{}
+{
+	<MAIS>|<MENOS>|<MULTIPLICAR>|<DIVIDIR>
+}
+//Sentencia FOR
+void SentenciaFor():
+{}
+{
+	<FOR> <EPARENTESE> SentenciaAsignacion() <PONTOVIRGULA> Comparaciones() SentenciaAsignacion() <DPARENTESE> <ECHAVE> Sentencias() <DCHAVE>/*|
+	"irepetir " "( " SentenciaAsignacion() "; " Comparaciones() SentenciaAsignacion() ") " "{ " Sentencias() "} "Sentencias()*/
+}
+
+//Sentencia DO
+void SentenciaDo():
+{}
+{
+	<DO> <ECHAVE>Sentencias() <DCHAVE> <WHILE> <EPARENTESE> Comparaciones() <DPARENTESE> /*|
+	"iespera " "( " Comparaciones() ") " "{ " Sentencias() "} "	*/
+}
+
+//Sentencia ASIGNACION
+void SentenciaAsignacion():
+{}
+{
+	<IDENTIFICADOR> <IGUAL> Expresion()
+}
+
+//Sentencia WRITE
+void SentenciaWrite():
+{}
+{
+	<WRITE> <EPARENTESE> Expresion() <DPARENTESE> <PONTOVIRGULA> /*|
+	"iescribir " "( " "^ " <CADEIAS> "^ " ") " "; "*/
+}
+
+//Sentencia READ
+void SentenciaRead():
+{}
+{
+	<READ><EPARENTESE><DPARENTESE><PONTOVIRGULA>
+}
+
+
